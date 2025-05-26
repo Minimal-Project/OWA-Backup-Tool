@@ -2,8 +2,6 @@
 
 This Python script automates downloading and deleting emails from Outlook Web Access (OWA), saving each email as an `.eml` file directly from your mailbox.
 
----
-
 ## Table of Contents
 
 - [Features](#features)
@@ -14,9 +12,6 @@ This Python script automates downloading and deleting emails from Outlook Web Ac
   - [Manual Steps During Execution](#manual-steps-during-execution)
 - [Batch Script (Windows)](#batch-script-windows)
 - [Important Notes](#important-notes)
-- [License](#license)
-
----
 
 ## Features
 
@@ -25,18 +20,14 @@ This Python script automates downloading and deleting emails from Outlook Web Ac
 - Supports accessing and backing up shared mailboxes.
 - Browser automation via Microsoft Edge (Chromium) and Selenium.
 
----
-
 ## Requirements
 
 - Python **3.10 or higher**
-- Microsoft Edge browser (**Chromium-based**)
-- Internet connection (required for downloading WebDriver)
+- Microsoft Edge browser
+- Internet connection
 - Python libraries:
   - `selenium`
   - `webdriver-manager`
-
----
 
 ## Installation
 
@@ -71,8 +62,6 @@ python owa_downloader.py --output-dir "path/to/download_folder"
 ```bash
 python owa_downloader.py --owa-url "https://your-custom-owa-url" --output-dir "C:/EmailBackups"
 ```
-
----
 
 ### Manual Steps During Execution
 
@@ -113,8 +102,6 @@ run_backup.bat
 - Adds Python to your system PATH temporarily (if needed).
 - Creates a `Downloads` folder in the script’s directory.
 - Automatically launches the Python script to start the backup process.
-
----
 
 ## Important Notes
 
