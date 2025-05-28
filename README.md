@@ -1,120 +1,111 @@
 # OWA Email Backup Tool
 
-This Python script automates downloading and deleting emails from Outlook Web Access (OWA), saving each email as an `.eml` file directly from your mailbox.
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/)
+[![Browser](https://img.shields.io/badge/Browser-Edge-blue)](https://www.microsoft.com/edge)
+[![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey)](#)
 
-## Table of Contents
-
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Usage](#usage)
-  - [Arguments](#arguments)
-  - [Manual Steps During Execution](#manual-steps-during-execution)
-- [Batch Script (Windows)](#batch-script-windows)
-- [Important Notes](#important-notes)
+A Python script to download and delete emails from Outlook Web Access (OWA), saving them as `.eml` files. Supports both personal and shared mailboxes. Uses Selenium with Microsoft Edge (Chromium).
 
 ## Features
 
-- Automatically download emails from OWA as `.eml` files.
-- Automatically delete emails after successful downloads.
-- Supports accessing and backing up shared mailboxes.
-- Browser automation via Microsoft Edge (Chromium) and Selenium.
+- Downloads emails as `.eml` files from Outlook Web Access
+- Deletes emails after successful download
+- Supports personal and shared mailboxes
+- Automates browser interaction using Selenium
+- Handles `CTRL+C` gracefully without error tracebacks
+- Includes a ready-to-use Windows batch script
 
 ## Requirements
 
-- Python **3.10 or higher**
-- Microsoft Edge browser
+- Python 3.10 or higher
+- Microsoft Edge (Chromium)
 - Internet connection
-- Python libraries:
-  - `selenium`
-  - `webdriver-manager`
+- Python packages:
 
-## Installation
-
-Clone this repository and install the required dependencies:
-
-```bash
-git clone https://github.com/Minimal-Project/OWA-Backup-Tool.git
-cd OWA-Backup-Tool
-
+```
 pip install selenium webdriver-manager
 ```
 
----
+## Installation
+
+```
+git clone https://github.com/Minimal-Project/OWA-Backup-Tool.git
+cd OWA-Backup-Tool
+pip install selenium webdriver-manager
+```
 
 ## Usage
 
-Execute the Python script directly from your terminal or command prompt:
+### Python Script
 
-```bash
-python owa_downloader.py --output-dir "path/to/download_folder"
+```
+python owa_downloader.py --output-dir "C:/EmailBackups" --mailbox own
 ```
 
 ### Arguments
 
-| Argument        | Default Value                           | Description                                        |
-|-----------------|-----------------------------------------|----------------------------------------------------|
-| `--owa-url`     | `https://outlook.office365.com/owa`     | URL to Outlook Web Access                          |
-| `--output-dir`  | `downloads`                             | Directory to store downloaded `.eml` email files   |
+| Argument        | Default                              | Description                                      |
+|----------------|--------------------------------------|--------------------------------------------------|
+| --owa-url      | https://outlook.office365.com/owa    | URL to Outlook Web Access                        |
+| --output-dir   | downloads                            | Directory where `.eml` files will be saved       |
+| --mailbox      | own                                  | Mailbox type: `own` or `shared`                  |
 
-#### Example with custom arguments:
+### Example
 
-```bash
-python owa_downloader.py --owa-url "https://your-custom-owa-url" --output-dir "C:/EmailBackups"
+```
+python owa_downloader.py --owa-url "https://owa.example.com" --output-dir "C:/Backups" --mailbox shared
 ```
 
-### Manual Steps During Execution
+## Manual Steps During Execution
 
-The script guides you through a few manual steps:
-
-1. **Login:**  
-   Log into your Outlook Web Access mailbox in the browser that opens.
-
-2. **Open Shared Mailbox (optional):**  
-   If accessing a shared mailbox:
-   - Click your profile icon.
-   - Choose **"Open another mailbox."**
-   - Enter the mailbox address and confirm.
-
-3. **Prepare Mailbox:**  
-   - Disable **conversation view** (`View → Show as → Messages`).
-   - Navigate to the folder containing emails you wish to download.
-   - Sort emails by date (**Oldest → Newest**).
-
-After completing these steps, press **ENTER** in your terminal to start the automated download and deletion process.
-
----
+1. Login to Outlook Web Access in the opened browser window.
+2. If using a shared mailbox:
+   - Click the profile icon
+   - Select "Open another mailbox"
+   - Enter the shared address and confirm
+3. In the mailbox:
+   - Disable Conversation View (View → Show as → Messages)
+   - Navigate to the desired folder
+   - Sort emails by Oldest → Newest
+4. Press ENTER in the terminal to start the download and deletion process.
 
 ## Batch Script (Windows)
 
-A convenient Windows batch script (`run_backup.bat`) is included for quick execution:
+The repository includes a batch script `run_backup.bat` to simplify running the tool.
 
 ### Usage
 
-Simply double-click or run via Command Prompt:
+Double-click the script or run it in Command Prompt:
 
-```batch
+```
 run_backup.bat
 ```
 
-### What this batch script does:
+### What it does
 
-- Adds Python to your system PATH temporarily (if needed).
-- Creates a `Downloads` folder in the script’s directory.
-- Automatically launches the Python script to start the backup process.
+- Adds Python to the PATH (temporarily, if needed)
+- Creates a `Downloads` folder if it doesn't exist
+- Prompts for mailbox type selection (`own` or `shared`)
+- Launches the Python script with appropriate options
+- Handles successful or failed exits and shows messages
+
+### Prompt Example
+
+```
+Choose mailbox type:
+  1) Own mailbox
+  2) Shared mailbox
+Enter your choice (1 or 2):
+```
 
 ## Important Notes
 
-- **Data Backup:**  
-  Ensure you securely back up your emails before running this script, as deleted emails are permanently removed.
-
-- **Compatibility:**  
-  This tool is specifically optimized for Microsoft Edge (Chromium-based).
-
-- **Disclaimer:**  
-  Use this tool responsibly and only with accounts you have explicit permission to access. The authors assume no liability for any misuse or data loss resulting from the use of this software.
+- Emails are permanently deleted after download. Use with caution.
+- Manual login is required due to security restrictions (SSO, MFA).
+- Only Microsoft Edge (Chromium) is supported.
+- Pressing `CTRL+C` will cancel the script cleanly and close the browser.
+- Use this script only with accounts you are authorized to access.
 
 ---
 
-© 2025 ReHoGa Interactive  
-
+© 2025 ReHoGa Interactive
