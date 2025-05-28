@@ -18,14 +18,12 @@ def init_driver(download_dir):
         "download.prompt_for_download": False,
         "download.directory_upgrade": True,
         "safebrowsing.enabled": False,
-        "safebrowsing.disable_download_protection": True,
-        "excludeSwitches": ["enable-logging"]
+        "safebrowsing.disable_download_protection": True
     }
     options.add_experimental_option("prefs", prefs)
     options.add_experimental_option("excludeSwitches", ["enable-logging"])
     options.add_argument("--safebrowsing-disable-download-protection")
     options.add_argument("--log-level=3")
-    options.add_argument("--silent")
     options.add_argument("--disable-logging")
     options.add_argument("--disable-dev-shm-usage")
     
@@ -141,44 +139,48 @@ def download_and_delete_emails(driver, output_dir):
 
     print(f"Done — {processed} messages processed, collapsed threads skipped.")
 
-
 def main():
     p = argparse.ArgumentParser(description="Download & delete OWA emails (attachments left in .eml)")
     p.add_argument("--owa-url", default="https://outlook.office365.com/owa", help="Your Outlook Web Access URL")
     p.add_argument("--output-dir", default="downloads", help="Directory to save .eml files")
+    p.add_argument("--mailbox", choices=["own", "shared"], default="own", help="Choose which mailbox to use: own or shared")
     args = p.parse_args()
-    
+
+    driver = None
     try:
-        # Ensure output directory exists
         os.makedirs(args.output_dir, exist_ok=True)
         abs_output_dir = os.path.abspath(args.output_dir)
         print(f"\nOWA Backup Tool starting...")
         print(f"Files will be saved to: {abs_output_dir}")
-        
-        # Initialize the browser
+
         driver = init_driver(abs_output_dir)
-        
-        try:
-            # Run the backup process
-            login_manual(driver, args.owa_url)
+
+        login_manual(driver, args.owa_url)
+        if args.mailbox == "shared":
             open_shared_manual(driver)
-            prepare_manual_view(driver)
-            download_and_delete_emails(driver, args.output_dir)
-        finally:
-            print("\nClosing browser.")
-            try:
-                driver.quit()
-            except Exception as e:
-                print(f"Error closing browser: {e}")
+        prepare_manual_view(driver)
+        download_and_delete_emails(driver, args.output_dir)
+
+        print("\nBackup completed successfully!")
+        return 0
+
+    except KeyboardInterrupt:
+        print("\n\nUser cancelled. Closing browser...")
+        return 1
+
     except Exception as e:
         print(f"\nError: {e}")
         print("\nThe program encountered an error. Please check your internet connection and try again.")
         input("Press ENTER to exit...")
         return 1
-    
-    print("\nBackup completed successfully!")
-    return 0
 
+    finally:
+        if driver:
+            try:
+                driver.quit()
+                print("Browser closed.")
+            except Exception as e:
+                print(f"Error closing browser: {e}")
 if __name__ == "__main__":
     import sys
     sys.exit(main())
