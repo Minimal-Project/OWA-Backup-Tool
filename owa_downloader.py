@@ -18,10 +18,21 @@ def init_driver(download_dir):
         "download.prompt_for_download": False,
         "download.directory_upgrade": True,
         "safebrowsing.enabled": False,
-        "safebrowsing.disable_download_protection": True
+        "safebrowsing.disable_download_protection": True,
+        "excludeSwitches": ["enable-logging"]
     }
     options.add_experimental_option("prefs", prefs)
+    options.add_experimental_option("excludeSwitches", ["enable-logging"])
     options.add_argument("--safebrowsing-disable-download-protection")
+    options.add_argument("--log-level=3")
+    options.add_argument("--silent")
+    options.add_argument("--disable-logging")
+    options.add_argument("--disable-dev-shm-usage")
+    
+    # Suppress DevTools listening message
+    os.environ['WDM_LOG_LEVEL'] = '0'
+    os.environ['WDM_PRINT_FIRST_LINE'] = 'False'
+    
     service = EdgeService(EdgeChromiumDriverManager().install())
     driver = webdriver.Edge(service=service, options=options)
     driver.maximize_window()
@@ -47,7 +58,7 @@ def open_shared_manual(driver):
     original = driver.current_window_handle
     print("\n2) Please open the shared mailbox in the browser:")
     print("     • Click your profile icon")
-    print("     • Choose “Anderes Postfach öffnen” / “Open another mailbox”")
+    print("     • Choose “Open another mailbox”")
     print("     • Enter the shared mailbox address and confirm")
     input("   After the shared mailbox opens in its own tab, press ENTER here…")
     for h in driver.window_handles:
@@ -136,19 +147,38 @@ def main():
     p.add_argument("--owa-url", default="https://outlook.office365.com/owa", help="Your Outlook Web Access URL")
     p.add_argument("--output-dir", default="downloads", help="Directory to save .eml files")
     args = p.parse_args()
-    os.makedirs(args.output_dir, exist_ok=True)
-    driver = init_driver(os.path.abspath(args.output_dir))
+    
     try:
-        login_manual(driver, args.owa_url)
-        open_shared_manual(driver)
-        prepare_manual_view(driver)
-        download_and_delete_emails(driver, args.output_dir)
-    finally:
-        print("Closing browser.")
+        # Ensure output directory exists
+        os.makedirs(args.output_dir, exist_ok=True)
+        abs_output_dir = os.path.abspath(args.output_dir)
+        print(f"\nOWA Backup Tool starting...")
+        print(f"Files will be saved to: {abs_output_dir}")
+        
+        # Initialize the browser
+        driver = init_driver(abs_output_dir)
+        
         try:
-            driver.quit()
-        except:
-            pass
+            # Run the backup process
+            login_manual(driver, args.owa_url)
+            open_shared_manual(driver)
+            prepare_manual_view(driver)
+            download_and_delete_emails(driver, args.output_dir)
+        finally:
+            print("\nClosing browser.")
+            try:
+                driver.quit()
+            except Exception as e:
+                print(f"Error closing browser: {e}")
+    except Exception as e:
+        print(f"\nError: {e}")
+        print("\nThe program encountered an error. Please check your internet connection and try again.")
+        input("Press ENTER to exit...")
+        return 1
+    
+    print("\nBackup completed successfully!")
+    return 0
 
 if __name__ == "__main__":
-    main()
+    import sys
+    sys.exit(main())
