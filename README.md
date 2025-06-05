@@ -12,7 +12,6 @@ A Python script to download and delete emails from Outlook Web Access (OWA), sav
 - Deletes emails after successful download
 - Supports personal and shared mailboxes
 - Automates browser interaction using Selenium
-- Handles `CTRL+C` gracefully without error tracebacks
 - Includes a ready-to-use Windows batch script
 
 ## Requirements
