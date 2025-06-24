@@ -26,11 +26,10 @@ def init_driver(download_dir):
     options.add_argument("--log-level=3")
     options.add_argument("--disable-logging")
     options.add_argument("--disable-dev-shm-usage")
-    
-    # Suppress DevTools listening message
+
     os.environ['WDM_LOG_LEVEL'] = '0'
     os.environ['WDM_PRINT_FIRST_LINE'] = 'False'
-    
+
     service = EdgeService(EdgeChromiumDriverManager().install())
     driver = webdriver.Edge(service=service, options=options)
     driver.maximize_window()
@@ -73,16 +72,31 @@ def prepare_manual_view(driver):
     print("     • Sort the list Oldest → Newest")
     input("   When that’s done, press ENTER here to start downloading…")
 
+def scroll_to_bottom(driver, pause_time=1, max_attempts=20):
+    print("\nScrolling to bottom to load all messages...")
+    last_height = driver.execute_script("return document.body.scrollHeight")
+    for attempt in range(max_attempts):
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(pause_time)
+        new_height = driver.execute_script("return document.body.scrollHeight")
+        if new_height == last_height:
+            print("Scrolling complete.")
+            break
+        last_height = new_height
+    else:
+        print("Reached scroll attempt limit — some messages may still be collapsed.")
+
 def download_and_delete_emails(driver, output_dir):
     wait = WebDriverWait(driver, 20)
     overflow_css = "button[aria-label='Weitere Aktionen'],button[aria-label='More actions']"
     processed = 0
 
+    scroll_to_bottom(driver)
+
     while True:
-        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(1)
         overflows = driver.find_elements(By.CSS_SELECTOR, overflow_css)
         toggles = driver.find_elements(By.CSS_SELECTOR, "button i[data-icon-name='ChevronRightSmall']")
+
         if not overflows:
             if toggles:
                 print(f"{len(toggles)} collapsed threads remain—skipping them.")
@@ -97,14 +111,12 @@ def download_and_delete_emails(driver, output_dir):
             download_found = False
             try:
                 sw = WebDriverWait(driver, 2)
-                dl = sw.until(EC.element_to_be_clickable((
-                    By.XPATH,
+                dl = sw.until(EC.element_to_be_clickable((By.XPATH,
                     "//button[@role='menuitem' and ( .//span[contains(text(),'Herunterladen')] or .//span[contains(text(),'Download')] )]"
                 )))
                 dl.click()
                 time.sleep(0.3)
-                eml = sw.until(EC.element_to_be_clickable((
-                    By.XPATH,
+                eml = sw.until(EC.element_to_be_clickable((By.XPATH,
                     "//button[@role='menuitem' and ( .//span[contains(text(),'Download as EML')] or .//span[contains(text(),'EML')] )]"
                 )))
                 eml.click()
@@ -119,8 +131,7 @@ def download_and_delete_emails(driver, output_dir):
             driver.execute_script("arguments[0].scrollIntoView({block:'center'});", btn2)
             btn2.click()
 
-            delete_btn = wait.until(EC.element_to_be_clickable((
-                By.XPATH,
+            delete_btn = wait.until(EC.element_to_be_clickable((By.XPATH,
                 "//button[@role='menuitem' and ( .//span[contains(text(),'Löschen')] or .//span[contains(text(),'Delete')] )]"
             )))
             delete_btn.click()
@@ -134,8 +145,8 @@ def download_and_delete_emails(driver, output_dir):
             print("Element went stale—retrying this item…")
             continue
         except Exception as e:
-            print(f"Unexpected error on item {processed+1}: {e}")
-            break
+            print(f"Unexpected error on item {processed+1}: {e} — skipping to next.")
+            continue
 
     print(f"Done — {processed} messages processed, collapsed threads skipped.")
 
@@ -181,6 +192,7 @@ def main():
                 print("Browser closed.")
             except Exception as e:
                 print(f"Error closing browser: {e}")
+
 if __name__ == "__main__":
     import sys
     sys.exit(main())
